@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+		xmlns:sec="https://www.thymeLeaf.org/thymeLeaf-extras-springsecurity5">
+<head>
+<meta charset="ISO-8859-1">
+<title>Clint Management System</title>
+
+<link rel="stylesheet"
+	href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+	integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+	crossorigin="anonymous">
+	
+</head>
+<body>
+
+	<div align="center">
+	<div sec:authorize="isAuthenticated()">
+    Welcome <b><span sec:authentication="name">Username</span></b>
+    &nbsp;
+    <i><span sec:authentication="principal.authorities">Roles</span></i>
+	<form th:action="@{/logout}" method="post">
+    <input type="submit" value="Logout" />
+    </form>
+
+	</div>
+
+
+	<div class="container my-2">
+	
+	
+  <form th:action="@{/search}" method="get">
+  <input type="text" name="keyword" th:value="${keyword}"  placeholder="Find client " size="50" >
+  <button type="submit" class="btn btn-info" >Search</button>
+  <button type="submit" class="btn btn-info" >Reset</button>
+  </form>
+	
+	
+	
+	
+	
+	<h1>Clients List</h1>
+	<div sec:authorize="hasAnyAuthority('ADMIN','CREATOR')">
+	<a th:href = "@{/showNewClientForm}" class="btn btn-primary btn-sm mb-3"> Add Client </a>
+	</div>
+	
+		<table border="1" class = "table table-striped table-responsive-md">
+			<thead>
+				<tr>
+					<th>
+						<a th:href="@{'/page/' + ${currentPage} + '?sortField=firstName&sortDir=' + ${reverseSortDir}}">
+							Client First Name</a>
+					</th>
+					<th>
+					<a th:href="@{'/page/' + ${currentPage} + '?sortField=lastName&sortDir=' + ${reverseSortDir}}">
+							Client Last Name</a>
+					</th>
+					<th>
+					<a th:href="@{'/page/' + ${currentPage} + '?sortField=email&sortDir=' + ${reverseSortDir}}">
+							Client Email</a>
+					</th>
+					
+					<th>
+					<a th:href="@{'/page/' + ${currentPage} + '?sortField=towhome&sortDir=' + ${reverseSortDir}}">
+							Contact To</a>
+					</th>
+					<th>
+					<a th:href="@{'/page/' + ${currentPage} + '?sortField=appDate&sortDir=' + ${reverseSortDir}}">
+							Appointment Date</a>
+					</th>
+					<th sec:authorize="hasAnyAuthority('ADMIN','CREATOR')"> Actions </th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="client : ${listClient}">
+					<td th:text="${client.firstName}"></td>
+					<td th:text="${client.lastName}"></td>
+					<td th:text="${client.email}"></td>
+					<td th:text="${client.towhome}"></td>
+					<td th:text="${client.appDate}"></td>
+					
+					<div sec:authorize="hasAnyAuthority('ADMIN','CREATOR')">
+					<td> <a th:href="@{/showFormForUpdate/{id}(id=${client.id})}" class="btn btn-primary">Update</a>
+						&nbsp;&nbsp;&nbsp;&nbsp;
+					    <a  sec:authorize="hasAnyAuthority('ADMIN')"th:href="@{/deleteClient/{id}(id=${client.id})}" class="btn btn-danger">Delete</a>
+					</td>
+					
+					</div>
+				</tr>
+			</tbody>
+		</table>
+		
+		<div th:if = "${totalPages > 1}">
+			<div class = "row col-sm-10">
+				<div class = "col-sm-2">
+					Total Rows: [[${totalItems}]] 
+				</div>
+				<div class = "col-sm-1">
+					<span th:each="i: ${#numbers.sequence(1, totalPages)}">
+						<a th:if="${currentPage != i}" th:href="@{'/page/' + ${i}+ '?sortField=' + ${sortField} + '&sortDir=' + ${sortDir}}">[[${i}]]</a>
+						<span th:unless="${currentPage != i}">[[${i}]]</span>  &nbsp; &nbsp;
+					</span>
+				</div>
+				<div class = "col-sm-1">
+					<a th:if="${currentPage < totalPages}" th:href="@{'/page/' + ${currentPage + 1}+ '?sortField=' + ${sortField} + '&sortDir=' + ${sortDir}}">Next</a>
+					<span th:unless="${currentPage < totalPages}">Next</span>
+				</div>
+				
+				 <div class="col-sm-1">
+    				<a th:if="${currentPage < totalPages}" th:href="@{'/page/' + ${totalPages}+ '?sortField=' + ${sortField} + '&sortDir=' + ${sortDir}}">Last</a>
+					<span th:unless="${currentPage < totalPages}">Last</span>
+   				 </div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
